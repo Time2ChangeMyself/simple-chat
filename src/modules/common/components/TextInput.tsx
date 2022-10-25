@@ -8,6 +8,7 @@ interface ITextInput {
   placeholder?: string;
   name: string;
   type?: string;
+  filename?: string;
 }
 
 export const TextInput: React.FC<ITextInput> = ({
@@ -17,6 +18,7 @@ export const TextInput: React.FC<ITextInput> = ({
   placeholder,
   name,
   type = 'text',
+  filename = null,
 }) => {
   const id = useId();
   const isHidden = type === 'file';
@@ -27,7 +29,12 @@ export const TextInput: React.FC<ITextInput> = ({
         className="bottom-100 flex gap-4 items-center text-red-500 font-bold cursor-pointer"
         htmlFor={id}
       >
-        {isHidden && <img className="max-h-10" src={ImageIcon} alt="" />}
+        {isHidden && (
+          <>
+            <img className="max-h-10" src={ImageIcon} alt="" />
+            {filename !== null && <p>{filename}</p>}
+          </>
+        )}
         {label}
       </label>
       <input

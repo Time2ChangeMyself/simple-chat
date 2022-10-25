@@ -2,13 +2,14 @@ import { ReactElement, FormEvent } from 'react';
 
 interface IFormWrap {
   children: ReactElement | ReactElement[];
-  handleSubmit: (e: FormEvent) => void;
+  handleSubmit: () => void;
 }
 
 export const FormWrap = ({ children, handleSubmit }: IFormWrap) => {
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    handleSubmit(e);
+
+    handleSubmit();
   };
 
   return (

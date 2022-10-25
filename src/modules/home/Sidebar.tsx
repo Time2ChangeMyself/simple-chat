@@ -1,11 +1,19 @@
 import { ChangeEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TextInput } from '../common/components';
+import { UsersList } from './UsersList';
 
 export const Sidebar = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState<string | undefined>();
+
   const handleInputChange = (e: ChangeEvent) => {
     const { value } = e.target as HTMLInputElement;
     setSearch(value);
+  };
+
+  const handleLogout = () => {
+    navigate({ pathname: '/' });
   };
 
   return (
@@ -13,6 +21,12 @@ export const Sidebar = () => {
       <div className="flex justify-center gap-4 items-center py-3 border-b-2">
         <div className="text-xl font-bold">Simple-Chat</div>
         <div>Avatar and name</div>
+        <button
+          className="text-black bg-white p-1 rounded"
+          onClick={handleLogout}
+        >
+          LogOut
+        </button>
       </div>
       <TextInput
         value={search}
@@ -20,6 +34,7 @@ export const Sidebar = () => {
         name="search"
         placeholder="Search"
       />
+      <UsersList />
     </div>
   );
 };

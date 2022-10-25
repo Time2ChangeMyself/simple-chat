@@ -11,7 +11,7 @@ interface IFormValue {
   name?: string;
   password?: string;
   email?: string;
-  avatar?: string;
+  file?: File;
 }
 
 export interface FormContextInterface {
@@ -29,11 +29,13 @@ export const FormContextProvider: FC<IFormContextProvider> = ({ children }) => {
   const [formValue, setFormValue] = useState<IFormValue>({});
 
   const handleFormValueChange = (e: ChangeEvent): void => {
-    const { value, name, type } = e.target as HTMLInputElement;
+    const { value, name, type, files } = e.target as HTMLInputElement;
 
-    if (type === 'file') return;
-
-    setFormValue((prevState) => ({ ...prevState, [name]: value }));
+    if (type === 'file' && files !== null) {
+      setFormValue((prevState) => ({ ...prevState, [name]: files[0] }));
+    } else {
+      setFormValue((prevState) => ({ ...prevState, [name]: value }));
+    }
   };
 
   const FormContextValue: FormContextInterface = {
