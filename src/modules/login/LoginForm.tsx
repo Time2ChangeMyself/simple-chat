@@ -2,6 +2,8 @@ import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FormContext, FormContextInterface } from '../../context/FormContext';
 import { FormWrap, TextInput } from '../common/components/';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../server/firebase';
 
 export const LoginForm = () => {
   const { formValue, handleFormValueChange } = useContext(
@@ -10,12 +12,26 @@ export const LoginForm = () => {
 
   const navigate = useNavigate();
 
+  const handleLogIn = async () => {
+    if (formValue.password === undefined || formValue.email === undefined)
+      return;
+    if (formValue.password === '' || formValue.email === '') return;
+
+    signInWithEmailAndPassword(auth, formValue.email, formValue.password)
+      .then(() => {
+        // Signed in
+        navigate('/home');
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log(errorCode, errorMessage);
+      });
+  };
+
   return (
-    <FormWrap
-      handleSubmit={() => {
-        navigate({ pathname: '/home' });
-      }}
-    >
+    <FormWrap handleSubmit={handleLogIn}>
       <TextInput
         name="email"
         onChange={handleFormValueChange}

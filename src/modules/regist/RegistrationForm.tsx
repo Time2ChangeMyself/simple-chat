@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FormContext, FormContextInterface } from '../../context/FormContext';
 import { TextInput } from '../common/components';
 import { FormWrap } from '../common/components/FormWrap';
@@ -7,19 +7,14 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { auth, storage, db } from '../../server/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-
-// Create the file metadata
-/** @type {any} */
-const metadata = {
-  contentType: 'image/jpeg',
-};
+import { metadata } from '../../types/metadata';
 
 export const RegistrationForm = () => {
+  const navigate = useNavigate();
+
   const { formValue, handleFormValueChange } = useContext(
     FormContext,
   ) as FormContextInterface;
-
-  console.log(formValue);
 
   const handleFormSubmit = async () => {
     if (formValue.email === undefined || formValue.password === undefined)
@@ -42,26 +37,62 @@ export const RegistrationForm = () => {
           metadata,
         );
 
-        uploadTask.on('state_changed', async () => {
-          // Upload completed successfully, now we can get the download URL
-          await getDownloadURL(uploadTask.snapshot.ref).then(
-            async (downloadURL) => {
-              await updateProfile(res.user, {
-                displayName: formValue.name,
-                photoURL: downloadURL,
-              });
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log(`Upload is  ${progress} + % done`);
+            switch (snapshot.state) {
+              case 'paused':
+                console.log('Upload is paused');
+                break;
+              case 'running':
+                console.log('Upload is running');
+                break;
+            }
+          },
+          (error) => {
+            // A full list of error codes is available at
+            // https://firebase.google.com/docs/storage/web/handle-errors
+            switch (error.code) {
+              case 'storage/unauthorized':
+                // User doesn't have permission to access the object
+                break;
+              case 'storage/canceled':
+                // User canceled the upload
+                break;
 
-              await setDoc(doc(db, 'users', res.user.uid), {
-                uid: res.user.uid,
-                displayName: formValue.name,
-                email: formValue.email,
-                photoURL: downloadURL,
-              });
+              // ...
 
-              await setDoc(doc(db, 'userChat', res.user.uid), {});
-            },
-          );
-        });
+              case 'storage/unknown':
+                // Unknown error occurred, inspect error.serverResponse
+                break;
+            }
+          },
+          async () => {
+            // Upload completed successfully, now we can get the download URL
+            await getDownloadURL(uploadTask.snapshot.ref).then(
+              async (downloadURL) => {
+                await updateProfile(res.user, {
+                  displayName: formValue.name,
+                  photoURL: downloadURL,
+                });
+
+                await setDoc(doc(db, 'users', res.user.uid), {
+                  uid: res.user.uid,
+                  displayName: formValue.name,
+                  email: formValue.email,
+                  photoURL: downloadURL,
+                });
+
+                await setDoc(doc(db, 'userChat', res.user.uid), {});
+                navigate('/home');
+              },
+            );
+          },
+        );
       }
     } catch (error) {
       console.log(error);

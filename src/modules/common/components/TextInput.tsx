@@ -1,4 +1,4 @@
-import { ChangeEvent, useId } from 'react';
+import { ChangeEvent, KeyboardEvent, useId } from 'react';
 import { ImageIcon } from '../../../assets';
 
 interface ITextInput {
@@ -9,6 +9,7 @@ interface ITextInput {
   name: string;
   type?: string;
   filename?: string;
+  onKeyDown?: (e: KeyboardEvent) => void;
 }
 
 export const TextInput: React.FC<ITextInput> = ({
@@ -19,6 +20,7 @@ export const TextInput: React.FC<ITextInput> = ({
   name,
   type = 'text',
   filename = null,
+  onKeyDown,
 }) => {
   const id = useId();
   const isHidden = type === 'file';
@@ -38,6 +40,7 @@ export const TextInput: React.FC<ITextInput> = ({
         {label}
       </label>
       <input
+        onKeyDown={onKeyDown}
         hidden={isHidden}
         name={name}
         className="w-full h-10 outline-none border-solid border-2 border-cyan-600 p-2 focus-visible:shadow-none"
